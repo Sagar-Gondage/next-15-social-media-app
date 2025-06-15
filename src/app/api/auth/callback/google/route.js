@@ -30,6 +30,8 @@ export async function GET(req) {
             storedCodeVerifier,
         );
 
+        console.log("tokens", tokens);
+
         const googleUser = await kyInstance
             .get("https://www.googleapis.com/oauth2/v1/userinfo", {
                 headers: {
@@ -38,11 +40,15 @@ export async function GET(req) {
             })
             .json();
 
+        console.log("google user", googleUser);
+
         const existingUser = await prisma.user.findUnique({
             where: {
                 googleId: googleUser.id
             }
         });
+
+        console.log("existing user", existingUser);
 
         if (existingUser) {
             const session = await lucia.createSession(existingUser.id, {});
@@ -59,7 +65,7 @@ export async function GET(req) {
                 }
             });
         }
-
+        console.log("existing user found")   
         const userId = generateIdFromEntropySize(10);
 
         const username = slugify(googleUser.name) + "-" + userId.slice(0, 4);
